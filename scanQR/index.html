@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#121212" />
+  
+  <title>MIKHMON QR CODE SCANNER</title>
+  
+  <!-- Menggunakan Google Fonts Inter untuk tampilan UI modern -->
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --primary-color: #20a8d8;
+      --accent-color: #00e676;
+      --text-main: #ffffff;
+      --text-muted: #a0a0a0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    #main {
+      width: 100%;
+      max-width: 450px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+
+    /* Container Kamera */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 25px;
+      aspect-ratio: 4/3;
+    }
+
+    .camera {
+      width: 100%;
+      height: 100%;
+    }
+
+    video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
+
+    /* Overlay Kotak Scan Modern */
+    .scan-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .scan-box {
+      width: 60%;
+      aspect-ratio: 1/1;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      position: relative;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5); /* Efek redup di luar kotak */
+    }
+
+    /* Sudut pembingkai kotak scan (Glow neon effect) */
+    .scan-box::before, .scan-box::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 4px solid var(--accent-color);
+    }
+    
+    /* Atur posisi border siku */
+    .scan-box {
+      background: linear-gradient(to bottom, transparent, transparent);
+    }
+    /* Siku Kiri Atas */
+    .scan-box::before {
+      top: -2px; left: -2px;
+      border-right: none; border-bottom: none;
+      border-top-left-radius: 12px;
+    }
+    /* Siku Kanan Atas */
+    .scan-box::after {
+      top: -2px; right: -2px;
+      border-left: none; border-bottom: none;
+      border-top-right-radius: 12px;
+    }
+    
+    /* Animasi Garis Laser Scan */
+    .laser-line {
+      position: absolute;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(to right, transparent, var(--accent-color), transparent);
+      box-shadow: 0 0 8px var(--accent-color);
+      top: 0;
+      animation: scanAnimation 2s linear infinite;
+    }
+
+    @keyframes scanAnimation {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+
+    /* Layout Tombol */
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 15px;
+      background-color: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-color);
+      color: #ffffff;
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(32, 168, 216, 0.3);
+    }
+
+    /* Footer / Hak Cipta */
+    .footer {
+      margin-top: 25px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .footer a {
+      text-decoration: none;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Fontello lama tetap dipertahankan agar ikon tidak rusak */
+    @font-face {
+      font-family: 'fontello';
+      src: url('./font/fontello.eot?14907215');
+      src: url('./font/fontello.eot?14907215#iefix') format('embedded-opentype'),
+           url('./font/fontello.woff?14907215') format('woff'),
+           url('./font/fontello.ttf?14907215') format('truetype'),
+           url('./font/fontello.svg?14907215#fontello') format('svg');
+      font-weight: normal;
+      font-style: normal;
+    }
+    .icon {
+      font-family: "fontello";
+      font-style: normal;
+      font-weight: normal;
+      display: inline-block;
+      text-align: center;
+      margin-right: 6px;
+    }
+  </style>
+
+  <script type="text/javascript" src="llqrcode.js"></script>
+  <script type="text/javascript" src="mikhmon_webqr.js?v1"></script>
+  <script async src="https://arc.io/widget.min.js#rDZc6s4f"></script>  
+</head>
+<body>
+
+  <div id="main">
+    <div id="mainbody">
+      <!-- Container kamera baru dengan overlay scanner modern -->
+      <div class="camera-container">
+        <div class="camera" id="outdiv"></div>
+        <div class="scan-overlay">
+          <div class="scan-box">
+            <div class="laser-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tombol aksi menggunakan CSS Grid modern -->
+      <div class="btn-group">
+        <div class="btn" id="reload" onclick="location.reload();">
+          <i class="icon">&#xe800;</i> Reload Cam
+        </div>
+        <a class="btn" href="intent://laksa19.github.io/myqr#Intent;scheme=http;package=com.android.chrome;end">
+          <i class="icon">&#xf268;</i> Open Chrome
+        </a>
+      </div>
+    </div>
+
+    <!-- Teks Judul dan Hak Cipta -->
+    <div class="footer">
+      <strong>MIKHMON QR CODE SCANNER</strong><br>
+      Powered by <a href="http://www.webqr.com" target="_blank">oscarpraso.com</a>
+    </div>
+  </div>
+
+  <canvas style="display:none;" id="qr-canvas" width="800" height="600"></canvas>
+  <script type="text/javascript">load();</script>
+
+</body>
+</html>
